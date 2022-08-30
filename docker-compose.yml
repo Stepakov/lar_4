@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  my_web_server:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./_docker/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./:/var/www/
+    container_name: project_nginx
+    depends_on:
+      -   my_app
+
+#  my_language:
+#    image: php:8.0-fpm
+#    volumes:
+#      - ./:/var/www/
+#    container_name: project_php
+  my_app:
+      build:
+          context: .
+          dockerfile: _docker/app/Dockerfile
+      volumes:
+          - ./:/var/www/
+      container_name: project_app
+      depends_on:
+          - my_db
+
+  my_db:
+      image: mysql:8.0
+      restart: always
+      ports:
+          - 8877:3306
+      environment:
+          - MYSQL_DATABASE=my_laravel_db
+          - MYSQL_ROOT_PASSWORD=root
+      volumes:
+          - ./tmp/db/:/var/lib/mysql/
+      command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+      container_name: project_db
